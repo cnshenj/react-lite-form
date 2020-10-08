@@ -23,9 +23,10 @@ export interface FormState<TModel = Record<string, unknown>> {
     readonly error?: string;
 }
 
-export type FormUpdate = Partial<StrictOmit<FormState, "model">> & { [path: string]: unknown };
+export type FormUpdate<TModel = Record<string, unknown>> =
+    Partial<StrictOmit<FormState<TModel>, "model">> & { [path: string]: unknown };
 
-export type FormStateProducer = <TModel>(data: FormState<TModel>, update: FormUpdate) => FormState<TModel>;
+export type FormStateProducer = <TModel>(state: FormState<TModel>, update: FormUpdate<TModel>) => FormState<TModel>;
 
 interface DefaultLiteFormOptions {
     /**
@@ -51,7 +52,7 @@ export interface LiteFormOptions<TModel = Record<string, unknown>> extends Parti
      * @param update The details of the update, will be merged with the current state.
      * @returns The updated form state.
      */
-    onProduceState(state: FormState<TModel>, update: FormUpdate): FormState<TModel>;
+    onProduceState(state: FormState<TModel>, update: FormUpdate<TModel>): FormState<TModel>;
 
     /**
      * Handles updating the view, e.g. a useState hook's update function.
@@ -217,7 +218,7 @@ export class LiteForm<TModel = Record<string, unknown>> {
         }
     }
 
-    private updateState(update: FormUpdate, updateView?: boolean): void {
+    private updateState(update: FormUpdate<TModel>, updateView?: boolean): void {
         const previousState = this._state;
         this._state = this._config.onProduceState(this._state, update);
         if (updateView && this._state !== previousState) {
